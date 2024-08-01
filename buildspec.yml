@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      # Install AWS CLI
+      - pip install awscli
+
+  pre_build:
+    commands:
+      # Retrieve private keys from Secrets Manager
+      - aws secretsmanager get-secret-value --secret-id dj/ssh-private-key --query SecretString --output text | jq -r '.git_private_key' > ~/.ssh/id_rsa_github
+      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa_ec2
+      - chmod 600 ~/.ssh/id_rsa_github
+      - chmod 600 ~/.ssh/id_rsa_ec2
+      - ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - ssh-keyscan 54.163.27.25 >> ~/.ssh/known_hosts
+
+  build:
+    commands:
+      # Clone the private repository
+      - git clone git@github.com:prathamesh5145/Task.git
+      - cd Task
+
+  post_build:
+    commands:
+      # Deploy to EC2 instance
+      - scp -i ~/.ssh/id_rsa_ec2 -r . ec2-user@54.163.27.25:/var/www/html/
