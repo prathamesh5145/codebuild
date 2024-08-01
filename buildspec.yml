@@ -5,30 +5,45 @@ phases:
     runtime-versions:
       python: 3.7
     commands:
+      - set -e
+      - echo "Installing AWS CLI and jq"
       - pip install awscli jq
 
   pre_build:
     commands:
+      - set -e
+      - echo "Fetching GitHub SSH key from Secrets Manager"
       - aws secretsmanager get-secret-value --secret-id dj/ssh-private-key --query SecretString --output text | jq -r '.git_private_key' > ~/.ssh/id_rsa_github
-      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa_ec2
+      - echo "Fetching EC2 SSH key from Secrets Manager"
+      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa
       - chmod 600 ~/.ssh/id_rsa_github
-      - chmod 600 ~/.ssh/id_rsa_ec2
+      - chmod 600 ~/.ssh/id_rsa
       - ssh-keyscan github.com >> ~/.ssh/known_hosts
       - ssh-keyscan 54.163.27.25 >> ~/.ssh/known_hosts
       - echo "Verifying SSH key for GitHub"
       - cat ~/.ssh/id_rsa_github
       - echo "Verifying SSH key for EC2"
-      - cat ~/.ssh/id_rsa_ec2
+      - cat ~/.ssh/id_rsa
 
   build:
     commands:
+      - set -e
+      - echo "Starting SSH agent"
       - eval $(ssh-agent -s)
+      - echo "Adding GitHub SSH key"
       - ssh-add ~/.ssh/id_rsa_github
-      - git clone git@github.com:prathamesh5145/Task.git
+      - echo "Cloning repository from GitHub"
+      - git clone https://github.com/prathamesh5145/Task.git
       - cd Task
 
   post_build:
     commands:
+      - set -e
+      - echo "Starting SSH agent for post-build"
       - eval $(ssh-agent -s)
-      - ssh-add ~/.ssh/id_rsa_ec2
-      - scp -i ~/.ssh/id_rsa_ec2 -r . ec2-user@54.163.27.25:/var/www/html/
+      - echo "Adding EC2 SSH key"
+      - ssh-add ~/.ssh/id_rsa
+      - echo "Transferring files to EC2"
+      - cd Task
+      - pwd
+      - scp -i ~/.ssh/id_rsa -r index.html ec2-user@54.163.27.25:/var/www/html/
