@@ -46,4 +46,4 @@ phases:
       - echo "Transferring files to EC2"
       - cd Task
       - pwd
-      - scp -i ~/.ssh/id_rsa -r index.html ec2-user@54.163.27.25:/var/www/html/
+      - scp -i ~/.ssh/id_rsa -r Task/index.html ec2-user@54.163.27.25:/var/www/html/
