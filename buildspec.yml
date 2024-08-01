@@ -15,35 +15,24 @@ phases:
       - echo "Fetching GitHub SSH key from Secrets Manager"
       - aws secretsmanager get-secret-value --secret-id dj/ssh-private-key --query SecretString --output text | jq -r '.git_private_key' > ~/.ssh/id_rsa_github
       - echo "Fetching EC2 SSH key from Secrets Manager"
-      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa
+      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa.pem
       - chmod 600 ~/.ssh/id_rsa_github
-      - chmod 600 ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa.pem
       - ssh-keyscan github.com >> ~/.ssh/known_hosts
       - ssh-keyscan 54.163.27.25 >> ~/.ssh/known_hosts
       - echo "Verifying SSH key for GitHub"
       - cat ~/.ssh/id_rsa_github
       - echo "Verifying SSH key for EC2"
-      - cat ~/.ssh/id_rsa
+      - cat ~/.ssh/id_rsa.pem
 
   build:
     commands:
-      - set -e
-      - echo "Starting SSH agent"
-      - eval $(ssh-agent -s)
-      - echo "Adding GitHub SSH key"
-      - ssh-add ~/.ssh/id_rsa_github
       - echo "Cloning repository from GitHub"
       - git clone https://github.com/prathamesh5145/Task.git
       - cd Task
 
   post_build:
     commands:
-      - set -e
-      - echo "Starting SSH agent for post-build"
-      - eval $(ssh-agent -s)
-      - echo "Adding EC2 SSH key"
-      - ssh-add ~/.ssh/id_rsa
-      - echo "Transferring files to EC2"
       - cd Task
       - pwd
-      - scp -i ~/.ssh/id_rsa -r Task/index.html ec2-user@54.163.27.25:/var/www/html/
+      - scp -i ~/.ssh/id_rsa.pem -r Task/index.html ec2-user@54.163.27.25:/var/www/html/
