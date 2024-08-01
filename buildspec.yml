@@ -15,15 +15,15 @@ phases:
       - echo "Fetching GitHub SSH key from Secrets Manager"
       - aws secretsmanager get-secret-value --secret-id dj/ssh-private-key --query SecretString --output text | jq -r '.git_private_key' > ~/.ssh/id_rsa_github
       - echo "Fetching EC2 SSH key from Secrets Manager"
-      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > ~/.ssh/id_rsa.pem
+      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > /kk.pem
       - chmod 600 ~/.ssh/id_rsa_github
-      - chmod 600 ~/.ssh/id_rsa.pem
+      - chmod 600 /kk.pem
       - ssh-keyscan github.com >> ~/.ssh/known_hosts
       - ssh-keyscan 54.163.27.25 >> ~/.ssh/known_hosts
       - echo "Verifying SSH key for GitHub"
       - cat ~/.ssh/id_rsa_github
       - echo "Verifying SSH key for EC2"
-      - cat ~/.ssh/id_rsa.pem
+      - cat /kk.pem
 
   build:
     commands:
@@ -37,4 +37,4 @@ phases:
       - set -e
       - echo "Starting SSH agent for post-build"
       - eval $(ssh-agent -s)
-      - scp -i ~/.ssh/id_rsa.pem -r /prathamesh/Task/index.html ec2-user@54.163.27.25:/var/www/html/
+      - scp -i /kk.pem -r /prathamesh/Task/index.html ec2-user@54.163.27.25:/var/www/html/
