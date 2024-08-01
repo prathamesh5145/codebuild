@@ -34,4 +34,7 @@ phases:
 
   post_build:
     commands:
+      - set -e
+      - echo "Starting SSH agent for post-build"
+      - eval $(ssh-agent -s)
       - scp -i ~/.ssh/id_rsa.pem -r /prathamesh/Task/index.html ec2-user@54.163.27.25:/var/www/html/
