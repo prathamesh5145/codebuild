@@ -28,11 +28,10 @@ phases:
   build:
     commands:
       - echo "Cloning repository from GitHub"
+      - mkdir /prathamesh
+      - cd /prathamesh
       - git clone https://github.com/prathamesh5145/Task.git
-      - cd Task
 
   post_build:
     commands:
-      - cd Task
-      - pwd
-      - scp -i ~/.ssh/id_rsa.pem -r Task/index.html ec2-user@54.163.27.25:/var/www/html/
+      - scp -i ~/.ssh/id_rsa.pem -r /prathamesh/Task/index.html ec2-user@54.163.27.25:/var/www/html/
