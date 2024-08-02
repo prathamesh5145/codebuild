@@ -3,38 +3,15 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.7
+      python: 3.8
     commands:
-      - set -e
-      - echo "Installing AWS CLI and jq"
-      - pip install awscli jq
-
-  pre_build:
-    commands:
-      - set -e
-      - echo "Fetching GitHub SSH key from Secrets Manager"
-      - aws secretsmanager get-secret-value --secret-id dj/ssh-private-key --query SecretString --output text | jq -r '.git_private_key' > ~/.ssh/id_rsa_github
-      - echo "Fetching EC2 SSH key from Secrets Manager"
-      - aws secretsmanager get-secret-value --secret-id ec2/ssh-private-key --query SecretString --output text | jq -r '.ec2_private_key' > /kk.pem
-      - chmod 600 ~/.ssh/id_rsa_github
-      - chmod 600 /kk.pem
-      - ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - ssh-keyscan 54.163.27.25 >> ~/.ssh/known_hosts
-      - echo "Verifying SSH key for GitHub"
-      - cat ~/.ssh/id_rsa_github
-      - echo "Verifying SSH key for EC2"
-      - cat /kk.pem
-
+      - echo Installing dependencies...
   build:
     commands:
-      - echo "Cloning repository from GitHub"
-      - mkdir /prathamesh
-      - cd /prathamesh
-      - git clone https://github.com/prathamesh5145/Task.git
-
-  post_build:
-    commands:
-      - set -e
-      - echo "Starting SSH agent for post-build"
-      - eval $(ssh-agent -s)
-      - scp -i /kk.pem -r /prathamesh/Task/index.html ec2-user@54.163.27.25:/var/www/html/
+      - echo "Deploying to EC2..."
+      - cd /root/
+      - git clone https://github.com/prathamesh5145/Task.git /root/
+      - mkdir /root/key
+      - aws secretsmanager get-secret-value --secret-id prod-ssh-key --query SecretString --output text > /root/key/prod-key.pem
+      - chmod 400 /root/key/prod-key.pem
+      - scp -i /root/key/prod-key.pem -o StrictHostKeyChecking=no /root/Task/* ec2-user@3.95.11.99:/var/www/html/
