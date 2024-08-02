@@ -9,9 +9,7 @@ phases:
   build:
     commands:
       - echo "Deploying to EC2..."
-      - cd /root/
-      - git clone https://github.com/prathamesh5145/Task.git /root/
-      - mkdir /root/key
-      - aws secretsmanager get-secret-value --secret-id prod-ssh-key --query SecretString --output text > /root/key/prod-key.pem
-      - chmod 400 /root/key/prod-key.pem
-      - scp -i /root/key/prod-key.pem -o StrictHostKeyChecking=no /root/Task/* ec2-user@3.95.11.99:/var/www/html/
+      - git clone https://github.com/prathamesh5145/Task.git
+      - aws secretsmanager get-secret-value --secret-id prod-ssh-key --query SecretString --output text > prod-key.pem
+      - chmod 400 prod-key.pem
+      - scp -i prod-key.pem -o StrictHostKeyChecking=no Task/* ec2-user@3.95.11.99:/var/www/html/
