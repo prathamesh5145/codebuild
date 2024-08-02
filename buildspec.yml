@@ -10,6 +10,6 @@ phases:
     commands:
       - echo "Deploying to EC2..."
       - git clone https://github.com/prathamesh5145/Task.git
-      - aws secretsmanager get-secret-value --secret-id prod-ssh-key --query SecretString --output text > prod-key.pem
+      - aws secretsmanager get-secret-value --secret-id prod1-ssh-key --query SecretString --output text > prod-key.pem
       - chmod 400 prod-key.pem
       - scp -i prod-key.pem -o StrictHostKeyChecking=no Task/* ec2-user@3.95.11.99:/var/www/html/
